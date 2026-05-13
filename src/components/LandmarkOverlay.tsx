@@ -1,6 +1,7 @@
 import { useEffect, useRef, type RefObject } from 'react'
 import { usePoseLandmarker } from '../hooks/usePoseLandmarker'
 import { normalizedToContainerPixel } from '../lib/coordinateTransform'
+import { computeFootPose, type FootPose } from '../lib/footPose'
 
 interface LandmarkOverlayProps {
   videoRef: RefObject<HTMLVideoElement | null>
@@ -94,8 +95,56 @@ export function LandmarkOverlay({ videoRef }: LandmarkOverlayProps) {
               }
             }
 
+            let leftFoot: FootPose | null = null
+            let rightFoot: FootPose | null = null
+
+            if (pose.length >= 33) {
+              leftFoot = computeFootPose(
+                pose[29],
+                pose[31],
+                pose[27],
+                'left',
+                videoSize,
+                containerSize,
+              )
+              rightFoot = computeFootPose(
+                pose[30],
+                pose[32],
+                pose[28],
+                'right',
+                videoSize,
+                containerSize,
+              )
+
+              for (const foot of [leftFoot, rightFoot]) {
+                if (!foot.isVisible) continue
+
+                ctx.strokeStyle = '#ff9800'
+                ctx.lineWidth = 3
+                ctx.beginPath()
+                ctx.moveTo(foot.heel.x, foot.heel.y)
+                ctx.lineTo(foot.toe.x, foot.toe.y)
+                ctx.stroke()
+
+                ctx.fillStyle = '#ffffff'
+                ctx.beginPath()
+                ctx.arc(foot.position.x, foot.position.y, 4, 0, Math.PI * 2)
+                ctx.fill()
+              }
+            }
+
             if (frameCount % 30 === 0 && Object.keys(footCoords).length > 0) {
               console.log('[Foot landmarks]', footCoords)
+              if (leftFoot && rightFoot) {
+                console.log('[Foot pose]', {
+                  left: leftFoot.isVisible
+                    ? { position: leftFoot.position, angle: leftFoot.angleDegrees, scale: leftFoot.scalePixels }
+                    : 'not visible',
+                  right: rightFoot.isVisible
+                    ? { position: rightFoot.position, angle: rightFoot.angleDegrees, scale: rightFoot.scalePixels }
+                    : 'not visible',
+                })
+              }
             }
           }
 
