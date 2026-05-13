@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { LandmarkOverlay } from './LandmarkOverlay'
 import { ThreeScene } from './ThreeScene'
+import type { FootPoseSnapshot } from '../types/footPoseRef'
 
 type CameraError = 'denied' | 'no-camera' | 'unknown' | null
 
@@ -8,6 +9,7 @@ export function CameraView() {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const [stream, setStream] = useState<MediaStream | null>(null)
   const [error, setError] = useState<CameraError>(null)
+  const footPoseRef = useRef<FootPoseSnapshot>({ left: null, right: null })
 
   useEffect(() => {
     let cancelled = false
@@ -65,7 +67,7 @@ export function CameraView() {
     return (
       <div className="camera-root">
         <p className="camera-error">{message}</p>
-        <ThreeScene />
+        <ThreeScene footPoseRef={footPoseRef} />
       </div>
     )
   }
@@ -79,8 +81,8 @@ export function CameraView() {
         playsInline
         muted
       />
-      <LandmarkOverlay videoRef={videoRef} />
-      <ThreeScene />
+      <LandmarkOverlay videoRef={videoRef} footPoseRef={footPoseRef} />
+      <ThreeScene footPoseRef={footPoseRef} />
       {stream && <div className="camera-status">Camera Active</div>}
     </div>
   )

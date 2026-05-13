@@ -2,9 +2,11 @@ import { useEffect, useRef, type RefObject } from 'react'
 import { usePoseLandmarker } from '../hooks/usePoseLandmarker'
 import { normalizedToContainerPixel } from '../lib/coordinateTransform'
 import { computeFootPose, type FootPose } from '../lib/footPose'
+import type { FootPoseRef } from '../types/footPoseRef'
 
 interface LandmarkOverlayProps {
   videoRef: RefObject<HTMLVideoElement | null>
+  footPoseRef: FootPoseRef
 }
 
 const FOOT_LANDMARK_LABELS: Record<number, string> = {
@@ -23,7 +25,7 @@ function colorForLandmark(index: number): string {
   return '#ffeb3b'
 }
 
-export function LandmarkOverlay({ videoRef }: LandmarkOverlayProps) {
+export function LandmarkOverlay({ videoRef, footPoseRef }: LandmarkOverlayProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const { landmarker, isReady } = usePoseLandmarker()
 
@@ -71,6 +73,9 @@ export function LandmarkOverlay({ videoRef }: LandmarkOverlayProps) {
           const videoSize = { w: video.videoWidth, h: video.videoHeight }
           const containerSize = { w: canvas.width, h: canvas.height }
 
+          let leftFoot: FootPose | null = null
+          let rightFoot: FootPose | null = null
+
           for (const pose of result.landmarks) {
             const footCoords: Record<string, Point2D> = {}
 
@@ -94,9 +99,6 @@ export function LandmarkOverlay({ videoRef }: LandmarkOverlayProps) {
                 }
               }
             }
-
-            let leftFoot: FootPose | null = null
-            let rightFoot: FootPose | null = null
 
             if (pose.length >= 33) {
               leftFoot = computeFootPose(
@@ -148,6 +150,8 @@ export function LandmarkOverlay({ videoRef }: LandmarkOverlayProps) {
             }
           }
 
+          footPoseRef.current = { left: leftFoot, right: rightFoot }
+
           frameCount++
         }
       }
@@ -161,7 +165,7 @@ export function LandmarkOverlay({ videoRef }: LandmarkOverlayProps) {
       cancelAnimationFrame(rafId)
       observer.disconnect()
     }
-  }, [isReady, landmarker, videoRef])
+  }, [isReady, landmarker, videoRef, footPoseRef])
 
   return <canvas ref={canvasRef} className="landmark-overlay" />
 }
