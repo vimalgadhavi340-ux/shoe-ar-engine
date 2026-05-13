@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { LandmarkOverlay } from './LandmarkOverlay'
+import { ThreeScene } from './ThreeScene'
 
 type CameraError = 'denied' | 'no-camera' | 'unknown' | null
 
@@ -64,6 +65,7 @@ export function CameraView() {
     return (
       <div className="camera-root">
         <p className="camera-error">{message}</p>
+        <ThreeScene />
       </div>
     )
   }
@@ -78,6 +80,7 @@ export function CameraView() {
         muted
       />
       <LandmarkOverlay videoRef={videoRef} />
+      <ThreeScene />
       {stream && <div className="camera-status">Camera Active</div>}
     </div>
   )
