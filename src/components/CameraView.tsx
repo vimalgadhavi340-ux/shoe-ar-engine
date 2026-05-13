@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { LandmarkOverlay } from './LandmarkOverlay'
 
 type CameraError = 'denied' | 'no-camera' | 'unknown' | null
 
@@ -76,6 +77,7 @@ export function CameraView() {
         playsInline
         muted
       />
+      <LandmarkOverlay videoRef={videoRef} />
       {stream && <div className="camera-status">Camera Active</div>}
     </div>
   )
